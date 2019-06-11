@@ -2,8 +2,11 @@
 
 const readline = require('readline');
 const { gen_number } = require('./number-font');
+const genCube = require('./print-cube');
 let start_time = null;
 let timer_obj = null;
+// States are 'gen'/'wait'/'run';
+let state = 'gen';
 
 readline.emitKeypressEvents(process.stdin);
 process.stdin.setRawMode(true);
@@ -15,6 +18,17 @@ function detect_keypress() {
     if (key.ctrl && key.name === 'c')
       process.exit();
 
+    if (state === 'gen') {
+      if (key.name === 'return' || key.name === 'y') {
+        const gened = genCube();
+        process.stdout.write(`\n\n${gened.moves}\n${gened.faces}\n`);
+      }
+      state = 'wait'
+      process.stdout.write('\npress any key to start timer...');
+      setTimeout(detect_keypress, 100);
+      return;
+    }
+
     if (start_time === null)
       start_timer();
     else
@@ -25,6 +39,7 @@ function detect_keypress() {
 }
 
 function start_timer() {
+  state = 'run';
   start_time = hr_ms();
   process.stdout.moveCursor(-process.stdout.columns, 0);
   process.stdout.write(gen_number(0));
@@ -39,7 +54,8 @@ function stop_timer() {
   clearInterval(timer_obj);
   process.stdout.moveCursor(-30, -5);
   process.stdout.write(gen_number(done_time));
-  process.stdout.write('\nwaiting for keypress...');
+  process.stdout.write('\nGenerate cube (Y/n): ');
+  state = 'gen';
   timer_obj = null;
   start_time = null;
 }
@@ -50,4 +66,4 @@ function hr_ms() {
 }
 
 detect_keypress();
-process.stdout.write('waiting for keypress...');
+process.stdout.write('Generate cube (Y/n): ');
