@@ -1,3 +1,9 @@
+'use strict';
+
+module.exports = {
+  gen_timer,
+};
+
 const nums_arr = [
   [['███'], ['█ █'], ['█ █'], ['█ █'], ['███']],  // 0
   [[' █ '], ['██ '], [' █ '], [' █ '], ['███']],  // 1
@@ -13,7 +19,7 @@ const nums_arr = [
   [['   '], [' █ '], ['   '], [' █ '], ['   ']],  // :
 ]
 
-function gen_number(ms) {
+function gen_timer(ms) {
   const min = ((ms / 1000) / 60) >>> 0;
   const sec = ((ms / 1000) % 60) >>> 0;
   const hec = ((ms / 10) % 100) >>> 0;
@@ -40,7 +46,3 @@ function n_to_arr(min, sec, hec) {
 
   return a;
 }
-
-module.exports = {
-  gen_number,
-};

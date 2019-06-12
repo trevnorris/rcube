@@ -1,6 +1,8 @@
 'use strict';
 
-module.exports = genCube;
+module.exports = {
+  gen_cube,
+};
 
 const Cube = require('cubejs');
 const block = '█';
@@ -24,16 +26,27 @@ const cube_arr = [
   new Array(12).fill('  '), new Array(12).fill('  '), new Array(12).fill('  '),
 ];
 
+// These are all used in gen_moves() to better ensure random cube state.
+const uMoves = [3,4,5,6,7,8,12,13,14,5,16,17];
+const fMoves = [0,1,2,6,7,8,9,10,11,15,16,17];
+const lMoves = [0,1,2,3,4,5,9,10,11,12,13,14];
+const dMoves = [3,4,5,6,7,8,12,13,14,15,16,17];
+const bMoves = [0,1,2,6,7,8,9,10,11,15,16,17];
+const rMoves = [0,1,2,3,4,5,9,10,11,12,13,14];
+const allMoves =
+  { 0: uMoves, 3: fMoves, 6: lMoves, 9: dMoves, 12: bMoves, 15: rMoves };
+
 // String sould be in the format of:
 // U...R...F...D...L...B...
 // except using color codes yrbogw; case insensitive.
 // quick color translation is:
 // Y...G...R...W...B...O...
-function genCube() {
+// TODO Allow drawing using a different orientation
+function gen_cube() {
   const cube = new Cube();
-  const moves = genMoves(20);
+  const moves = gen_moves(20);
   cube.move(moves);
-  const faces = turnToColors(cube.asString());
+  const faces = turn_to_colors(cube.asString());
   const up = faces.substr(0, 9);
   const right = faces.substr(9, 9);
   const front = faces.substr(18, 9);
@@ -62,31 +75,22 @@ function write_face(x, y, colors) {
   }
 }
 
-function turnToColors(facelets) {
+function turn_to_colors(facelets) {
   return facelets.replace(/U/g,'y').replace(/F/g,'r').replace(/L/g, 'b')
     .replace(/R/g, 'g').replace(/B/g,'o').replace(/D/g, 'w');
 }
 
-function genMoves(nmoves) {
+function gen_moves(nmoves) {
   const arr = [];
-  let last_move = -1;
+  let last_move = Math.random() * 18 >>> 0;
+  arr.push(moveMap[last_move]);
+
   while (arr.length < nmoves) {
-    const move = Math.random() * 18 >>> 0;
-    const move_mod = move % 3;
-    if (move === last_move) {
-      continue;
-    }
-    if (move_mod === 0 && (move + 1 === last_move || move + 2 === last_move)) {
-      continue;
-    }
-    if (move_mod === 1 && (move - 1 === last_move || move + 1 === last_move)) {
-      continue;
-    }
-    if (move_mod === 2 && (move - 2 === last_move || move - 1 === last_move)) {
-      continue;
-    }
+    const a = allMoves[last_move - (last_move % 3)];
+    const move = a[Math.random() * a.length >>> 0];
     arr.push(moveMap[move]);
     last_move = move;
   }
+
   return arr.join(' ');
 }
