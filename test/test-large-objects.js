@@ -5,12 +5,25 @@ const { gen_moves } = require('../gen-cube.js');
 
 const cube_states = {};
 const cube = new RubiCube();
+let state_entries = 0;
+let state_repeats = 0;
 
-for (let i = 0; i < 100000; i++) {
-  const m = gen_moves(6);
+for (let i = 0; i < 200000; i++) {
+  const m = gen_moves(7);
+  cube.reset();
   cube.rotate(m);
   insertCubeState(cube.compact(), m);
 }
+
+//console.log(JSON.stringify(cube_states));
+//let states_length = 0;
+//for (let i in cube_states)
+  //states_length++;
+//console.log(states_length);
+
+console.log(Object.keys(cube_states).length);
+console.log(state_entries);
+console.log(state_repeats);
 
 function insertCubeState(arr, moves) {
   let cobj = cube_states;
@@ -39,5 +52,14 @@ function insertCubeState(arr, moves) {
     cobj[arr[5]] = [];
 
   cobj = cobj[arr[5]];
-  cobj.push(moves);
+  //if (!cobj.includes(moves))
+    //cobj.push(moves);
+/* debug:start */
+  if (!cobj.includes(moves)) {
+    cobj.push(moves);
+    state_entries++;
+  } else {
+    state_repeats++;
+  }
+/* debug:stop */
 }

@@ -12,6 +12,8 @@ const benchList = {
   rubicube,
   rubicubearray,
   reset,
+  compact,
+  compact32,
 };
 
 const bench = process.argv[2];
@@ -68,6 +70,31 @@ function rubicubearray() {
   const t = hr2ms();
   for (var i = 0; i < ITER; i++) {
     r.rotate(RubiCube.rotate2Array(gen_moves(l), false), false);
+  }
+  printResults(hr2ms(), t);
+}
+
+
+function compact() {
+  const r = new RubiCube();
+  const b = +process.argv[3] || 3;
+  const t = hr2ms();
+  for (var i = 0; i < ITER; i++) {
+    //r.rotate(gen_moves(2)).compact(b);
+    r.compact(b);
+  }
+  printResults(hr2ms(), t);
+}
+
+
+function compact32() {
+  const r = new RubiCube();
+  const ui32 = new Uint32Array(6);
+  const b = +process.argv[3] || 3;
+  const t = hr2ms();
+  for (var i = 0; i < ITER; i++) {
+    //r.rotate(gen_moves(2)).compact32(b, ui32);
+    r.compact32(b, ui32);
   }
   printResults(hr2ms(), t);
 }
