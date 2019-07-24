@@ -3,21 +3,44 @@
 const readline = require('readline');
 const { gen_timer } = require('./gen-timer');
 const { gen_cube } = require('./gen-cube');
+
+const argv = require('minimist')(process.argv.slice(2), {
+  default: { 'auto-gen': 'yes' },
+});
+
+const default_strs = {
+  yes: 'Generate cube (Y/n):',
+  no: '\nGenerate cube (y/N):',
+};
+
+const auto_gen_str = argv['auto-gen'].toLowerCase();
+if (auto_gen_str !== 'yes' && auto_gen_str !== 'no') {
+  throw new Error(`auto-gen should be yes/no: ${auto_gen_str}`);
+}
+
+const gen_cube_str = default_strs[auto_gen_str];
+
 let start_time = null;
 let timer_obj = null;
 // States are 'gen'/'wait'/'run';
-let state = 'gen';
+let state = auto_gen_str === 'yes' ? 'gen' : 'wait';
 
 readline.emitKeypressEvents(process.stdin);
-process.stdin.setRawMode(true);
-
-process.on('SIGINT', process.exit);
+if (process.stdin.isTTY)
+  process.stdin.setRawMode(true);
 
 function detect_keypress() {
   process.stdin.once('keypress', (str, key) => {
     if (key.ctrl && key.name === 'c') {
       process.stdout.write('\n');
       process.exit();
+    }
+    if (key.ctrl && key.name === 'l') {
+      process.stdout.write('\033c');
+      return detect_keypress();
+    }
+    if (key.ctrl) {
+      return setTimeout(detect_keypress, 100);
     }
 
     if (state === 'gen') {
@@ -57,8 +80,8 @@ function stop_timer() {
   clearInterval(timer_obj);
   process.stdout.moveCursor(-30, -5);
   process.stdout.write(gen_timer(done_time));
-  process.stdout.write('\nGenerate cube (Y/n): ');
-  state = 'gen';
+  process.stdout.write(gen_cube_str);
+  state = auto_gen_str === 'yes' ? 'gen' : 'wait';
   timer_obj = null;
   start_time = null;
 }
@@ -69,4 +92,4 @@ function hr_ms() {
 }
 
 detect_keypress();
-process.stdout.write('Generate cube (Y/n): ');
+process.stdout.write(gen_cube_str);

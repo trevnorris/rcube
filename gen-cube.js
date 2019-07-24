@@ -2,6 +2,7 @@
 
 module.exports = {
   gen_cube,
+  gen_moves,
 };
 
 const Cube = require('cubejs');
@@ -12,7 +13,6 @@ const colorc = {
   y: '\x1b[1;33m',
   r: '\x1b[0;31m',
   b: '\x1b[0;34m',
-  //o: '\x1b[0;33m',
   o: '\x1b[38;5;214m',
   g: '\x1b[0;32m',
   w: '\x1b[1;37m',
@@ -41,10 +41,9 @@ const allMoves =
 // except using color codes yrbogw; case insensitive.
 // quick color translation is:
 // Y...G...R...W...B...O...
-// TODO Allow drawing using a different orientation
-function gen_cube() {
+function gen_cube(n = 22) {
   const cube = new Cube();
-  const moves = gen_moves(20);
+  const moves = gen_moves(n);
   cube.move(moves);
   const faces = turn_to_colors(cube.asString());
   const up = faces.substr(0, 9);
@@ -75,22 +74,24 @@ function write_face(x, y, colors) {
   }
 }
 
+// TODO Allow drawing using a different orientation. This would be done by
+// switching the replacement values.
 function turn_to_colors(facelets) {
-  return facelets.replace(/U/g,'y').replace(/F/g,'r').replace(/L/g, 'b')
-    .replace(/R/g, 'g').replace(/B/g,'o').replace(/D/g, 'w');
+  return facelets.replace(/U/g,'w').replace(/F/g,'g').replace(/L/g, 'o')
+    .replace(/R/g, 'r').replace(/B/g,'b').replace(/D/g, 'y');
 }
 
 function gen_moves(nmoves) {
-  const arr = [];
   let last_move = Math.random() * 18 >>> 0;
-  arr.push(moveMap[last_move]);
+  let mstr = moveMap[last_move];
+  let mv_cnt = 1;
 
-  while (arr.length < nmoves) {
+  while (mv_cnt++ < nmoves) {
     const a = allMoves[last_move - (last_move % 3)];
     const move = a[Math.random() * a.length >>> 0];
-    arr.push(moveMap[move]);
+    mstr += ` ${moveMap[move]}`;
     last_move = move;
   }
 
-  return arr.join(' ');
+  return mstr;
 }
