@@ -42,8 +42,19 @@ using Napi::Uint8Array;
     }                                                                          \
   } while(0)
 
+static void RotateCW(Uint8Array& arr) {
+  uint8_t s[2] = { arr[0], arr[1] };
+  arr[0] = arr[6]; arr[6] = arr[4]; arr[4] = arr[2]; arr[2] = s[0];
+  arr[1] = arr[7]; arr[7] = arr[5]; arr[5] = arr[3]; arr[3] = s[1];
+}
 
-void RotateR(const CallbackInfo& info) {
+static void RotateCCW(Uint8Array& arr) {
+  uint8_t s[2] = { arr[0], arr[1] };
+  arr[0] = arr[2]; arr[2] = arr[4]; arr[4] = arr[6]; arr[6] = s[0];
+  arr[1] = arr[3]; arr[3] = arr[5]; arr[5] = arr[7]; arr[7] = s[1];
+}
+
+static void RotateR(const CallbackInfo& info) {
   Env env = info.Env();
   Uint8Array u;
   Uint8Array f;
@@ -52,12 +63,12 @@ void RotateR(const CallbackInfo& info) {
   Uint8Array r;
   uint8_t k[3];
   ROTATE_CHECK(info, env, u, f, d, b, r);
-  k[0] = u[2];
-  k[1] = u[3];
-  k[2] = u[4];
-
-  //return info[0].As<TypedArray>();
-  //return Number::New(env, ta.ElementSize());
+  k[0] = u[2]; k[1] = u[3]; k[2] = u[4];
+  u[2] = f[2]; u[3] = f[3]; u[4] = f[4];
+  f[2] = d[6]; f[3] = d[7]; f[4] = d[0];
+  d[0] = b[0]; d[7] = b[7]; d[6] = b[6];
+  b[0] = k[2]; b[7] = k[1]; b[6] = k[0];
+  RotateCW(r);
 }
 
 Object InitAll(Env env, Object exports) {

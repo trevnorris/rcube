@@ -6,16 +6,6 @@
 
 const rubin = require('../build/Release/rubicube_native.node');
 
-const ITER = 1e6;
-let z = process.hrtime();
-for (let i = 0; i < ITER; i++) {
-  rubin.hello();
-}
-z = process.hrtime(z);
-console.log((z[0] * 1e9 + z[1]) / ITER);
-
-return;
-
 const { RubiCube } = require('../lib/rubicube.js');
 
 const cube = new RubiCube();
