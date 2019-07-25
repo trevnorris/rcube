@@ -62,8 +62,8 @@ assert.deepEqual(r1.build(), r2.build());
 const ITER = 1e6;
 let t = process.hrtime();
 for (let i = 0; i < ITER; i++) {
-  r1.rotate([2]);
-  //r1.rotate([1]);
+  //r1.rotate([2]);
+  r1.rotate([1]);
 }
 t = process.hrtime(t);
 console.log((t[0] * 1e9 + t[1]) / ITER);
