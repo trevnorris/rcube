@@ -6,6 +6,48 @@
 
 const rubin = require('../build/Release/rubicube_native.node');
 
+const movesArray = [
+  null,
+  rubin.rotateR, rubin.rotateRp, rubin.rotateL, rubin.rotateLp,
+  rubin.rotateU, rubin.rotateUp, rubin.rotateD, rubin.rotateDp,
+  rubin.rotateF, rubin.rotateFp, rubin.rotateB, rubin.rotateBp,
+]
+
+function callRubin(ab, moves) {
+  //for (let i = 0; i < moves.length; i++) {
+    //movesArray[moves[i]](ab);
+    //movesArray[12](ab);
+  //}
+  let m;
+  for (m of moves) {
+    if (m === 1)
+      rubin.rotateR(ab);
+    else if (m === 2)
+      rubin.rotateRp(ab);
+    else if (m === 3)
+      rubin.rotateL(ab);
+    else if (m === 4)
+      rubin.rotateLp(ab);
+    else if (m === 5)
+      rubin.rotateU(ab);
+    else if (m === 6)
+      rubin.rotateUp(ab);
+    else if (m === 7)
+      rubin.rotateD(ab);
+    else if (m === 8)
+      rubin.rotateDp(ab);
+    else if (m === 9)
+      rubin.rotateF(ab);
+    else if (m === 10)
+      rubin.rotateFp(ab);
+    else if (m === 11)
+      rubin.rotateB(ab);
+    else if (m === 12)
+      rubin.rotateBp(ab)
+    //movesArray[m](ab);
+  }
+}
+
 const { RubiCube } = require('../lib/rubicube.js');
 
 const cube = new RubiCube();
@@ -20,6 +62,7 @@ let move_depth = 0;
 /* debug:start */
 let t = Date.now();
 let transverse_calls = 0;
+let rotate_calls = 0;
 /* debug:stop */
 
 // Need function that will give the next set of movements based on current
@@ -43,20 +86,24 @@ function transverse(depth) {
   //cube.compact(3, compact_arr);
   //cube.rotate(moves.subarray(0, move_depth));
 
-  cube.reset().rotate(moves.subarray(0, move_depth)).compact(3, compact_arr);
+  //cube.reset().rotate(moves.subarray(0, move_depth)).compact(3, compact_arr);
+
+  callRubin(cube.reset()._cubeab, moves.subarray(0, move_depth));
+  const cp = cube.compact(3, compact_arr);
 
 
   //const cp = cube.reset().rotate(moves.subarray(0, move_depth)).compact().join('.');
 
-  //if (cp === TO_MATCH) {
-    //const r2s = RubiCube.rotate2String(moves.subarray(0, move_depth));
+  if (cp === TO_MATCH) {
+    const r2s = RubiCube.rotate2String(moves.subarray(0, move_depth));
     //stateStor[TO_MATCH].push(
       //RubiCube.invert(r2s));
-    //console.log(r2s);
-  //}
+    console.log(r2s);
+  }
 
 /* debug:start */
 transverse_calls++;
+rotate_calls += move_depth;
 /* debug:stop */
 
   //stateStor[RubiCube.rotate2String(moves)] = cube.rotate(moves).compact(4);
@@ -129,9 +176,10 @@ transverse((+process.argv[2] || 4) + move_depth);
 //const actual = Object.keys(stateStor).length;
 //console.error(`${actual}\t${transverse_calls - actual}\t${transverse_calls}`);
 t = Date.now() - t;
-console.error(`calls: ${transverse_calls}   ${t}ms   ${(transverse_calls/t*1000).toFixed(2)}/sec`);
+console.error(`transvers: ${transverse_calls}\t${t}ms\t${(transverse_calls/t*1000).toFixed(2)}/sec`);
+console.error(`rotations: ${rotate_calls}\t${t}ms\t${(rotate_calls/t*1000).toFixed(2)}/sec`);
 
 stateStor[TO_MATCH].sort((a, b) => a.length - b.length);
-console.log(stateStor);
+//console.log(stateStor);
 
 /* debug:stop */
