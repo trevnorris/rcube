@@ -25,14 +25,22 @@ let transverse_calls = 0;
 
 //const TO_MATCH = cube.set(
   //'wwoggwww ggywgggg booooooo brrbbbbb rrwrrrwb yyyyyyry').compact().join('.');
-const TO_MATCH = cube.reset().rotate(`r u r'`).compact().join('.');
+//const rotation_moves = `r u u r' u' r u' r'`;
+//const TO_MATCH = cube.reset().rotate(rotation_moves).compact().join('.');
+
+const TO_MATCH = cube.reset().set(
+  'wgrobwyw grogwggg gbrooooo wwobbbbb wwbrrrrr yyyyyyyg').compact().join('.');
+
 stateStor[TO_MATCH] = [];
 
+// TODO: The matches should be collapsed and remove patterns that aren't
+// actually needed. e.g. d' l d r
 function transverse(depth) {
   const cp = cube.reset().rotate(moves.subarray(0, move_depth)).compact().join('.');
 
   if (cp === TO_MATCH) {
-    stateStor[TO_MATCH].push(RubiCube.rotate2String(moves.subarray(0, move_depth)));
+    stateStor[TO_MATCH].push(
+      RubiCube.invert(RubiCube.rotate2String(moves.subarray(0, move_depth))));
   }
 
 /* debug:start */
@@ -82,8 +90,15 @@ transverse_calls++;
   }
 }
 
-const user_move = +process.argv[3] || null;
-transverse(+process.argv[2] || 4, user_move ? [user_move] : []);
+let user_move = process.argv[3] ? JSON.parse(process.argv[3]) : null;
+if (typeof user_move === 'string') {
+  user_move = RubiCube.rotate2Array(user_move);
+}
+if (user_move) {
+  move_depth = user_move.length;
+  moves.set(user_move);
+}
+transverse((+process.argv[2] || 4) + move_depth);
 
 //console.log(stateStor);
 //console.log(Object.keys(stateStor).length);
