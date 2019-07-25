@@ -23,25 +23,35 @@ let transverse_calls = 0;
 // Need function that will give the next set of movements based on current
 // depth. Taking into account
 
-//const TO_MATCH = cube.set(
-  //'wwoggwww ggywgggg booooooo brrbbbbb rrwrrrwb yyyyyyry').compact().join('.');
-//const rotation_moves = `r u u r' u' r u' r'`;
-//const TO_MATCH = cube.reset().rotate(rotation_moves).compact().join('.');
+const rotation_moves = `r u u l`;
+const TO_MATCH = cube.reset().rotate(rotation_moves).compact().join('.');
 
-const TO_MATCH = cube.reset().set(
-  'wgrobwyw grogwggg gbrooooo wwobbbbb wwbrrrrr yyyyyyyg').compact().join('.');
+//const TO_MATCH = cube.reset().set(
+  //'wgrobwyw grogwggg gbrooooo wwobbbbb wwbrrrrr yyyyyyyg').compact().join('.');
 
 stateStor[TO_MATCH] = [];
+const compact_arr = [0, 0, 0, 0, 0, 0];
 
 // TODO: The matches should be collapsed and remove patterns that aren't
 // actually needed. e.g. d' l d r
 function transverse(depth) {
-  const cp = cube.reset().rotate(moves.subarray(0, move_depth)).compact().join('.');
 
-  if (cp === TO_MATCH) {
-    stateStor[TO_MATCH].push(
-      RubiCube.invert(RubiCube.rotate2String(moves.subarray(0, move_depth))));
-  }
+  //moves.subarray(0, move_depth);
+  //cube.reset();
+  //cube.compact(3, compact_arr);
+  //cube.rotate(moves.subarray(0, move_depth));
+
+  cube.reset().rotate(moves.subarray(0, move_depth)).compact(3, compact_arr);
+
+
+  //const cp = cube.reset().rotate(moves.subarray(0, move_depth)).compact().join('.');
+
+  //if (cp === TO_MATCH) {
+    //const r2s = RubiCube.rotate2String(moves.subarray(0, move_depth));
+    //stateStor[TO_MATCH].push(
+      //RubiCube.invert(r2s));
+    //console.log(r2s);
+  //}
 
 /* debug:start */
 transverse_calls++;
@@ -116,7 +126,8 @@ transverse((+process.argv[2] || 4) + move_depth);
 //console.error(all_moves);
 //const actual = Object.keys(stateStor).length;
 //console.error(`${actual}\t${transverse_calls - actual}\t${transverse_calls}`);
-console.error(`calls: ${transverse_calls}   ${Date.now() - t}ms`);
+t = Date.now() - t;
+console.error(`calls: ${transverse_calls}   ${t}ms   ${(transverse_calls/t*1000).toFixed(2)}/sec`);
 
 stateStor[TO_MATCH].sort((a, b) => a.length - b.length);
 console.log(stateStor);
