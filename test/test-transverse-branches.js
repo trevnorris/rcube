@@ -1,22 +1,21 @@
 'use strict';
 
-/* Number of entries at each transversal of n.
- *  13, 127, 1195, 11206, 105046, 983926
+/* Number of unique entries at each transversal:
+ *  13, 127, 1195, 11206, 105046, 983926, 9205558
  */
 
 const { RubiCube } = require('../lib/rubicube.js');
-/* debug:start */
-const crypto = require('crypto');
-/* debug:stop */
 
 const cube = new RubiCube();
 const stateStor = {};
 const stateArr = [];
 const lastStates = [];
+
+const moves = new Uint8Array(26);
+let move_depth = 0;
+
+
 /* debug:start */
-let state_entries = 0;
-let state_repeats = 0;
-let stores = 0;
 let t = Date.now();
 let transverse_calls = 0;
 /* debug:stop */
@@ -24,12 +23,21 @@ let transverse_calls = 0;
 // Need function that will give the next set of movements based on current
 // depth. Taking into account
 
-function transverse(depth, moves = []) {
+//const TO_MATCH = cube.set(
+  //'wwoggwww ggywgggg booooooo brrbbbbb rrwrrrwb yyyyyyry').compact().join('.');
+const TO_MATCH = cube.reset().rotate(`r u r'`).compact().join('.');
+stateStor[TO_MATCH] = [];
+
+function transverse(depth) {
+  const cp = cube.reset().rotate(moves.subarray(0, move_depth)).compact().join('.');
+
+  if (cp === TO_MATCH) {
+    stateStor[TO_MATCH].push(RubiCube.rotate2String(moves.subarray(0, move_depth)));
+  }
+
 /* debug:start */
 transverse_calls++;
 /* debug:stop */
-
-  const cp = cube.reset().rotate(moves).compact().join(',');
 
   //stateStor[RubiCube.rotate2String(moves)] = cube.rotate(moves).compact(4);
   //if (stateStor[cp]) {
@@ -40,11 +48,11 @@ transverse_calls++;
 
   //stateStor[cp] = true;
 
-  if (!stateStor[cp])
-    stateStor[cp] = [];
-  stateStor[cp].push(RubiCube.rotate2String(moves, ''));
+  //if (!stateStor[cp])
+    //stateStor[cp] = [];
+  //stateStor[cp].push(RubiCube.rotate2String(moves, ''));
 
-  if (depth === 0) {
+  if (depth === move_depth) {
     return;
   }
 
@@ -52,29 +60,31 @@ transverse_calls++;
   // The variable i is the move from moveListArray.
   for (let i = 1; i < RubiCube.moveListArray.length; i++) {
 
-    /* */
-    if (moves.length > 1) {
+    if (move_depth > 0) {
       const check = (i % 2) === 0 ? -1 : 1;
-      if (i + check === moves[moves.length - 1]) {
+      if (i + check === moves[move_depth - 1]) {
         continue;
       }
     }
-    /* */
 
-    if (moves.length > 2) {
-      const mb2 = moves[moves.length - 2];
-      const mb1 = moves[moves.length - 1];
+    if (move_depth > 1) {
+      const mb2 = moves[move_depth - 2];
+      const mb1 = moves[move_depth - 1];
       if (mb2 === mb1 && mb1 === i) {
         continue;
       }
     }
-    const m2 = moves.slice();
-    m2.push(i);
-    transverse(depth - 1, m2);
+
+    moves[move_depth] = i;
+    move_depth++;
+    transverse(depth);
+    move_depth--;
   }
 }
 
-transverse(+process.argv[2] || 4);
+const user_move = +process.argv[3] || null;
+transverse(+process.argv[2] || 4, user_move ? [user_move] : []);
+
 //console.log(stateStor);
 //console.log(Object.keys(stateStor).length);
 
@@ -83,55 +93,17 @@ transverse(+process.argv[2] || 4);
 //Object.keys(stateStor).forEach(e => console.log(`[${e}]: ${stateStor[e].join('; ')}`));
 //Object.keys(stateStor).sort().forEach(e => console.log(`[${e}]`));
 
-const actual = Object.keys(stateStor).length;
-console.log(`${actual}\t${transverse_calls - actual}`);
-console.log(Date.now() - t);
+//let all_moves = 0;
+//for (let e in stateStor) {
+  //all_moves += stateStor[e].length
+//}
+
+//console.error(all_moves);
+//const actual = Object.keys(stateStor).length;
+//console.error(`${actual}\t${transverse_calls - actual}\t${transverse_calls}`);
+console.error(`calls: ${transverse_calls}   ${Date.now() - t}ms`);
+
+stateStor[TO_MATCH].sort((a, b) => a.length - b.length);
+console.log(stateStor);
 
 /* debug:stop */
-
-process.on('SIGINT', () => {
-  const actual = Object.keys(stateStor).length;
-  console.log(`${actual}\t${transverse_calls - actual}`);
-  console.log(Date.now() - t);
-});
-
-
-function insertCubeState(arr, moves) {
-  let cobj = stateStor;
-
-  if (cobj[arr[0]] === undefined)
-    cobj[arr[0]] = {};
-
-  cobj = cobj[arr[0]];
-  if (cobj[arr[1]] === undefined)
-    cobj[arr[1]] = {};
-
-  cobj = cobj[arr[1]];
-  if (cobj[arr[2]] === undefined)
-    cobj[arr[2]] = {};
-
-  cobj = cobj[arr[2]];
-  if (cobj[arr[3]] === undefined)
-    cobj[arr[3]] = {};
-
-  cobj = cobj[arr[3]];
-  if (cobj[arr[4]] === undefined)
-    cobj[arr[4]] = {};
-
-  cobj = cobj[arr[4]];
-  if (cobj[arr[5]] === undefined)
-    cobj[arr[5]] = [];
-
-  cobj = cobj[arr[5]];
-  //if (!cobj.includes(moves))
-    //cobj.push(moves);
-/* debug:start */
-  if (cobj.length !== 0) {
-    state_repeats++;
-  }
-  if (!cobj.includes(moves)) {
-    cobj.push(moves);
-    state_entries++;
-  }
-/* debug:stop */
-}
