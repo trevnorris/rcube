@@ -18,18 +18,20 @@ let move_depth = 0;
 /* debug:start */
 let t = Date.now();
 let transverse_calls = 0;
+let rotate_calls = 0;
 /* debug:stop */
 
 // Need function that will give the next set of movements based on current
 // depth. Taking into account
 
 const rotation_moves = `r u u l`;
-const TO_MATCH = cube.reset().rotate(rotation_moves).compact().join('.');
+const TO_MATCH = cube.reset().rotate(rotation_moves).compact();
+const TO_MATCH_C = TO_MATCH.join('.');
 
 //const TO_MATCH = cube.reset().set(
   //'wgrobwyw grogwggg gbrooooo wwobbbbb wwbrrrrr yyyyyyyg').compact().join('.');
 
-stateStor[TO_MATCH] = [];
+stateStor[TO_MATCH_C] = [];
 const compact_arr = [0, 0, 0, 0, 0, 0];
 
 // TODO: The matches should be collapsed and remove patterns that aren't
@@ -41,20 +43,23 @@ function transverse(depth) {
   //cube.compact(3, compact_arr);
   //cube.rotate(moves.subarray(0, move_depth));
 
-  cube.reset().rotate(moves.subarray(0, move_depth)).compact(3, compact_arr);
+  const cp = cube.reset().rotate(moves.subarray(0, move_depth)).compact(3, compact_arr);
 
 
   //const cp = cube.reset().rotate(moves.subarray(0, move_depth)).compact().join('.');
 
-  //if (cp === TO_MATCH) {
-    //const r2s = RubiCube.rotate2String(moves.subarray(0, move_depth));
-    //stateStor[TO_MATCH].push(
-      //RubiCube.invert(r2s));
-    //console.log(r2s);
-  //}
+  if (cp[0] === TO_MATCH[0] && cp[1] === TO_MATCH[1] &&
+      cp[2] === TO_MATCH[2] && cp[3] === TO_MATCH[3] &&
+      cp[4] === TO_MATCH[4] && cp[5] === TO_MATCH[5]) {
+    const r2s = RubiCube.rotate2String(moves.subarray(0, move_depth));
+    stateStor[TO_MATCH_C].push(
+      RubiCube.invert(r2s));
+    console.log(r2s);
+  }
 
 /* debug:start */
 transverse_calls++;
+rotate_calls += move_depth;
 /* debug:stop */
 
   //stateStor[RubiCube.rotate2String(moves)] = cube.rotate(moves).compact(4);
@@ -127,9 +132,10 @@ transverse((+process.argv[2] || 4) + move_depth);
 //const actual = Object.keys(stateStor).length;
 //console.error(`${actual}\t${transverse_calls - actual}\t${transverse_calls}`);
 t = Date.now() - t;
-console.error(`calls: ${transverse_calls}   ${t}ms   ${(transverse_calls/t*1000).toFixed(2)}/sec`);
+console.error(`transvers: ${transverse_calls}\t${t}ms\t${(transverse_calls/t*1000).toFixed(2)}/sec`);
+console.error(`rotations: ${rotate_calls}\t${t}ms\t${(rotate_calls/t*1000).toFixed(2)}/sec`);
 
-stateStor[TO_MATCH].sort((a, b) => a.length - b.length);
-console.log(stateStor);
+//stateStor[TO_MATCH].sort((a, b) => a.length - b.length);
+//console.log(stateStor);
 
 /* debug:stop */
